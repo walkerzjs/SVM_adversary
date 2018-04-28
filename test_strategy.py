@@ -156,6 +156,10 @@ for doc in test_data_splitted:
     # print(test_data_coefficient.items())
     test_data_coefficient = list(test_data_coefficient.items())
     test_data_coefficient.sort(key = lambda x:x[1], reverse=True)
+    positive_words = [x for x in test_data_coefficient if x[1] > 0]
+    positive_words.sort(key = lambda x:x[1], reverse=True)
+    negative_words = [x for x in test_data_coefficient if x[1] < 0]
+    negative_words.sort(key = lambda x:x[1], reverse=False)
 
     doc.sort(key = lambda x:x[1], reverse=True)
 #    doc_preserved = doc.copy()
