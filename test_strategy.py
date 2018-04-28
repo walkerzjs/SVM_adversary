@@ -149,6 +149,7 @@ for doc in test_data_splitted:
 #        doc[i] = neg_features[idx]
 #        idx+=1
     # Summarize tokens coefficient
+    
     test_data_coefficient = defaultdict(float)
     for word, coefficient in doc:
         test_data_coefficient[word] += coefficient
@@ -157,6 +158,7 @@ for doc in test_data_splitted:
     test_data_coefficient.sort(key = lambda x:x[1], reverse=True)
 
     doc.sort(key = lambda x:x[1], reverse=True)
+#    doc_preserved = doc.copy()
 #    print(doc)
     doc_text = [pair[0] for pair in doc]
 
@@ -166,40 +168,102 @@ for doc in test_data_splitted:
     origin_set = doc_text.copy()
     replaced_amount = 0
     deleted_amount = 0
-    # Delete most positive words
-    for i in range(len(pos_features)):
-        replaced_amount = len((set(origin_set)-set(doc_text)) | (set(doc_text)-set(origin_set)))
-#        print(replaced_amount)
-        if replaced_amount==10:
-#            print(i)
-            break
-        pos_word = pos_features[i][0]
-        if doc_text.count(pos_word)>0:
-            #The next line referred to https://stackoverflow.com/questions/1157106/remove-all-occurrences-of-a-value-from-a-list
-            #This function removes all occurances of "pos_word" in doc_text
-            doc_text = list(filter(lambda x: x != pos_word, doc_text))
-            deleted_amount+=1
-#            print("Deleted word: {}".format(pos_word))
-    # Add most negative words
-    for i in range(len(neg_features)):
+    
+    neg_features_copy = neg_features.copy()
+    positive_words = [x for x in test_data_coefficient if x[1] > 0]
+#    for i in range(len(positive_words)):
+#        replaced_amount = len((set(origin_set)-set(doc_text)) | (set(doc_text)-set(origin_set)))
+##        print(replaced_amount)
+#        if replaced_amount==20:
+##            print(i)
+#            break
+#        tup = test_data_coefficient[i]
+#        print(tup)
+#        print(tup[1])
+#        weight = tup[1]
+#        if weight>0 and abs(weight)>abs(neg_features_copy[0][1]):
+#            doc_text = list(filter(lambda x: x != tup[0], doc_text))
+#            print("Deleted word: {}".format(tup[0]))
+#        if weight>0 and abs(weight)<abs(neg_features_copy[0][1]):
+#            for j in range(3):
+#                word_appended = neg_features_copy.pop(0)[0]
+#                doc_text.append(word_appended)
+#                print("Added word: {}".format(word_appended))
+    idx = 0
+    print("Begin")
+    while(idx<len(positive_words)):
         replaced_amount = len((set(origin_set)-set(doc_text)) | (set(doc_text)-set(origin_set)))
 #        print(replaced_amount)
         if replaced_amount==20:
 #            print(i)
             break
-        neg_word = neg_features[i][0]
-        if doc_text.count(neg_word)>0:
-            continue
-        else:
-            for i in range(3):
-                doc_text.append(neg_word)
-#                print("Added word: {}".format(neg_word))
-
-    replaced_amount = len((set(origin_set)-set(doc_text)) | (set(doc_text)-set(origin_set)))
-#        print(replaced_amount)
+        tup = positive_words[idx]
+        
+        print(tup)
+        weight = tup[1]
+        if abs(weight)>abs(neg_features_copy[0][1]):
+            doc_text = list(filter(lambda x: x != tup[0], doc_text))
+            idx+=1
+            print("Deleted word: {}".format(tup[0]))
+        if abs(weight)<abs(neg_features_copy[0][1]):
+            tuple_appended = neg_features_copy.pop(0)
+            word_appended = tuple_appended[0]
+            coef = tuple_appended[1]
+            for j in range(1):
+                doc_text.append(word_appended)
+                print("Added word: {}, {}".format(word_appended, coef))
+        
+        
+        
+#    for i in range(len(neg_features)):
+#        
+#        replaced_amount = len((set(origin_set)-set(doc_text)) | (set(doc_text)-set(origin_set)))
+##        print(replaced_amount)
+#        if replaced_amount==20:
+##            print(i)
+#            break
+#        neg_word = neg_features[i][0]
+##        if doc_text.count(neg_word)>0:
+##            continue
+##        else:
+#        for i in range(1):
+#            doc_text.append(neg_word)
+        
     if replaced_amount!=20:
         print("Something wrong!!! The replaced amount is : {}".format(replaced_amount))
         break
+#    # Delete most positive words
+#    for i in range(len(pos_features)):
+#        replaced_amount = len((set(origin_set)-set(doc_text)) | (set(doc_text)-set(origin_set)))
+##        print(replaced_amount)
+#        if replaced_amount==10:
+##            print(i)
+#            break
+#        pos_word = pos_features[i][0]
+#        if doc_text.count(pos_word)>0:
+#            #The next line referred to https://stackoverflow.com/questions/1157106/remove-all-occurrences-of-a-value-from-a-list
+#            #This function removes all occurances of "pos_word" in doc_text
+#            doc_text = list(filter(lambda x: x != pos_word, doc_text))
+#            deleted_amount+=1
+##            print("Deleted word: {}".format(pos_word))
+    # Add most negative words
+#    for i in range(len(neg_features)):
+#        replaced_amount = len((set(origin_set)-set(doc_text)) | (set(doc_text)-set(origin_set)))
+##        print(replaced_amount)
+#        if replaced_amount==20:
+##            print(i)
+#            break
+#        neg_word = neg_features[i][0]
+#        if doc_text.count(neg_word)>0:
+#            continue
+#        else:
+#            for i in range(3):
+#                doc_text.append(neg_word)
+##                print("Added word: {}".format(neg_word))
+#
+#    replaced_amount = len((set(origin_set)-set(doc_text)) | (set(doc_text)-set(origin_set)))
+##        print(replaced_amount)
+
 #            print(i)
 
 
