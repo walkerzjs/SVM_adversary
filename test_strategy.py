@@ -3,7 +3,7 @@
 """
 Created on Wed Apr 18 03:27:03 2018
 
-@author: junshuaizhang
+@author: junshuaizhang, monaithang
 """
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
@@ -11,14 +11,15 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 from sklearn.svm import LinearSVC
 import helper
+from collections import defaultdict
 #import numpy as np
 #def fool_classifier(test_data): ## Please do not change the function defination...
     ## Read the test data file, i.e., 'test_data.txt' from Present Working Directory...
-    
-    
+
+
     ## You are supposed to use pre-defined class: 'strategy()' in the file `helper.py` for model training (if any),
     #  and modifications limit checking
-strategy_instance=helper.strategy() 
+strategy_instance=helper.strategy()
 parameters={'gamma':'auto',"C":0.1,
             "degree":10, "kernel":"linear",
             "coef0":-100}
@@ -54,14 +55,14 @@ for i in range(len(X)):
 #    X[i] = np.array(X[i])
     X[i] = " ".join(X[i])
 
-    
+
 Y= y_train_class0 + [1]*len(strategy_instance.class1)
 
 X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0)
 
 
 vectorizer = CountVectorizer(max_df=1.0, min_df=0.01, binary = False)
-                               
+
 #vectorizer = TfidfVectorizer(max_df=0.5,
 #                                         min_df=2,max_features=10000,stop_words="english",ngram_range=(2, 2), binary=True, norm="l1")
 vectors_train = vectorizer.fit_transform(X_train)
@@ -122,7 +123,7 @@ for pair in pairs:
         pos_features.append(pair)
     else:
         neg_features.append(pair)
-        
+
 pos_features.sort(key = lambda x:x[1], reverse=True)
 neg_features.sort(key = lambda x:x[1])
 pairs_dict = dict(pairs)
@@ -131,11 +132,11 @@ for doc in test_data_splitted:
     for i in range(len(doc)):
         word = doc[i]
         if word in pairs_dict:
-            
+
             doc[i] = (word,pairs_dict[word])
         else:
             doc[i] = (word,0)
-   
+
 # Generate modified data
 num_to_delete = 10
 neg_features_dict = dict(neg_features)
@@ -147,10 +148,18 @@ for doc in test_data_splitted:
 #    for i in order[:10]:
 #        doc[i] = neg_features[idx]
 #        idx+=1
+    # Summarize tokens coefficient
+    test_data_coefficient = defaultdict(float)
+    for word, coefficient in doc:
+        test_data_coefficient[word] += coefficient
+    # print(test_data_coefficient.items())
+    test_data_coefficient = list(test_data_coefficient.items())
+    test_data_coefficient.sort(key = lambda x:x[1], reverse=True)
+
     doc.sort(key = lambda x:x[1], reverse=True)
 #    print(doc)
     doc_text = [pair[0] for pair in doc]
-    
+
     word_set = set()
     last_count = 0
 #    idx_now = 0
@@ -166,7 +175,7 @@ for doc in test_data_splitted:
             break
         pos_word = pos_features[i][0]
         if doc_text.count(pos_word)>0:
-            #The next line referred to https://stackoverflow.com/questions/1157106/remove-all-occurrences-of-a-value-from-a-list 
+            #The next line referred to https://stackoverflow.com/questions/1157106/remove-all-occurrences-of-a-value-from-a-list
             #This function removes all occurances of "pos_word" in doc_text
             doc_text = list(filter(lambda x: x != pos_word, doc_text))
             deleted_amount+=1
@@ -185,24 +194,24 @@ for doc in test_data_splitted:
             for i in range(3):
                 doc_text.append(neg_word)
 #                print("Added word: {}".format(neg_word))
-        
+
     replaced_amount = len((set(origin_set)-set(doc_text)) | (set(doc_text)-set(origin_set)))
 #        print(replaced_amount)
     if replaced_amount!=20:
         print("Something wrong!!! The replaced amount is : {}".format(replaced_amount))
         break
-#            print(i)         
-            
-            
+#            print(i)
+
+
 #    for i in range(len(neg_features)):
 ##    i=0
 ##    while i < len(doc_text):
 #        word_replace = neg_features[i][0]
 #        if doc_text.count(word_replace)>0:
 #            continue
-#        
+#
 #        word= doc_text[last_count]
-#        #The next line referred to https://stackoverflow.com/questions/1157106/remove-all-occurrences-of-a-value-from-a-list 
+#        #The next line referred to https://stackoverflow.com/questions/1157106/remove-all-occurrences-of-a-value-from-a-list
 #        if word not in neg_features_dict:
 #            doc_text = list(filter(lambda x: x != word, doc_text))
 #        doc_text.append(neg_features[i][0])
@@ -214,24 +223,24 @@ for doc in test_data_splitted:
 ##            print(i)
 #            break
 #        if replaced_amount> last_count:
-            
+
 
 #        word_set.add(neg_features[len(word_set)][0])
 #        idx_now+=1
         #i+=1
-   
+
     #print("aaa: "+str(replaced_amount))
     test_data_modified_splitted.append(doc_text)
-    
+
 #    doc_text = [pair[0] for pair in doc]
 #    test_data.append(doc_text)
-    
+
 
 modified_test_data=[]
 for i in range(len(test_data_modified_splitted)):
 #    X[i] = np.array(X[i])
     modified_test_data.append(" ".join(test_data_modified_splitted[i]))
-    
+
 vectors_test_modified = vectorizer.transform(modified_test_data)
 
 file = open(modified_data,"w")
@@ -249,7 +258,7 @@ print("modified_data_accuracy")
 print(clf.score(vectors_test_modified,y_test2))
 print(strategy_instance.check_data("./test_data.txt","./modified_data.txt"))
 
-#strategy_instance2=helper.strategy() 
+#strategy_instance2=helper.strategy()
 #parameters2={'gamma':'auto',"C":10,
 #            "degree":3, "kernel":"rbf",
 #            "coef0":0}
