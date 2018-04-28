@@ -19,7 +19,7 @@ import helper
     ## You are supposed to use pre-defined class: 'strategy()' in the file `helper.py` for model training (if any),
     #  and modifications limit checking
 strategy_instance=helper.strategy() 
-parameters={'gamma':'auto',"C":10,
+parameters={'gamma':'auto',"C":0.1,
             "degree":10, "kernel":"linear",
             "coef0":-100}
 
@@ -182,8 +182,9 @@ for doc in test_data_splitted:
         if doc_text.count(neg_word)>0:
             continue
         else:
-            doc_text.append(neg_word)
-#            print("Added word: {}".format(neg_word))
+            for i in range(3):
+                doc_text.append(neg_word)
+#                print("Added word: {}".format(neg_word))
         
     replaced_amount = len((set(origin_set)-set(doc_text)) | (set(doc_text)-set(origin_set)))
 #        print(replaced_amount)
