@@ -246,12 +246,12 @@ train_1 = strategy_instance.class1.copy()
 
 train_0_list = []
 for doc in train_0:
-    train_0_list+=doc
+    train_0_list+=list(set(doc))
 train_0_set = set(train_0_list)
 
 train_1_list = []
 for doc in train_1:
-    train_1_list+=doc
+    train_1_list+=list(set(doc))
 train_1_set = set(train_1_list)
 
 diff_0_1 = train_0_set-train_1_set
@@ -348,12 +348,14 @@ for i in range(len(test_data_splitted)):
     print("begin modifying: ")
     added_num = 0
     deleted_num = 0
+    if len(delete_candidates)>1:    
+        delete_flag = 1
     while(diff!=20):
         
         neg = add_candidates[idx_neg]
         pos = delete_candidates[idx_pos]
         #this part can control the amount of added words
-        if abs(neg[1])> abs(pos[1]) and added_num<10:
+        if abs(neg[1])> abs(pos[1]) and (added_num<3 or delete_flag==0):
             doc_modified.append(neg[0])
             print("add: {}".format(neg[0]))
             idx_neg+=1
@@ -368,7 +370,7 @@ for i in range(len(test_data_splitted)):
     doc_modified_separated = []
     for word in doc_modified:
         doc_modified_separated.append(word)
-        doc_modified_separated.append(".")
+    doc_modified_separated.append(".")
     
     test_data_splitted_modified.append(doc_modified_separated)
         
