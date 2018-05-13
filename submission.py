@@ -1,6 +1,6 @@
 import helper
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.model_selection import train_test_split
+#from sklearn.model_selection import train_test_split
 def fool_classifier(test_data): ## Please do not change the function defination...
     ## Read the test data file, i.e., 'test_data.txt' from Present Working Directory...
     
@@ -43,9 +43,10 @@ def fool_classifier(test_data): ## Please do not change the function defination.
     
     Y= y_train_class0 + [1]*len(strategy_instance.class1)
     
-    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0)
+#    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0)
     
-    
+    X_train = X
+    y_train = Y
     vectorizer = CountVectorizer(max_df=1.0, min_df=1, binary = True, ngram_range=(1,1), max_features=5720, lowercase=False)
     
     
@@ -109,12 +110,12 @@ def fool_classifier(test_data): ## Please do not change the function defination.
     for doc in train_0:
         train_0_list+=list(set(doc))
     train_0_set = set(train_0_list)
-    
+    train_0_set = sorted(list(train_0_set))
     train_1_list = []
     for doc in train_1:
         train_1_list+=list(set(doc))
     train_1_set = set(train_1_list)
-    
+    train_1_set = sorted(list(train_1_set))
     
     ratios_train_0 = []
     ratios_dict_0 = {}
@@ -216,7 +217,7 @@ def fool_classifier(test_data): ## Please do not change the function defination.
     modified_test_data=[]
     for i in range(len(test_data_splitted_modified)):
     #    X[i] = np.array(X[i])
-        modified_test_data.append(" ".join(test_data_splitted_modified[i]))
+        modified_test_data.append(" ".join(sorted(test_data_splitted_modified[i])))
     
 #    vectors_test_modified = vectorizer.transform(modified_test_data)
     
