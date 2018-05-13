@@ -1,16 +1,6 @@
 import helper
-#def fool_classifier(test_data): ## Please do not change the function defination...
-    ## Read the test data file, i.e., 'test_data.txt' from Present Working Directory...
-    
-    
-    ## You are supposed to use pre-defined class: 'strategy()' in the file `helper.py` for model training (if any),
-    #  and modifications limit checking
-#from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
-#from sklearn.metrics import confusion_matrix
-#import numpy as np
-test_data='./test_data.txt'
 def fool_classifier(test_data): ## Please do not change the function defination...
     ## Read the test data file, i.e., 'test_data.txt' from Present Working Directory...
     
@@ -18,11 +8,11 @@ def fool_classifier(test_data): ## Please do not change the function defination.
     ## You are supposed to use pre-defined class: 'strategy()' in the file `helper.py` for model training (if any),
     #  and modifications limit checking
     strategy_instance=helper.strategy() 
-    parameters={'gamma':'auto',"C":0.05,
-                "degree":3, "kernel":"linear",
-                "coef0":0}
+    parameters={'gamma':'auto',"C":0.1,
+            "degree":3, "kernel":"linear",
+            "coef0":1}
     
-    
+
     ##..................................#
     #
     #
@@ -39,67 +29,57 @@ def fool_classifier(test_data): ## Please do not change the function defination.
     
     ## You can check that the modified text is within the modification limits.
     modified_data='./modified_data.txt'
-    #assert strategy_instance.check_data(test_data, modified_data)
-    #return strategy_instance ## NOTE: You are required to return the instance of this class.
-    
-    #X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
-    X_train_class0, X_test_class0,y_train_class0, y_test_class0 = \
-    train_test_split(strategy_instance.class0,\
-                      [0]*len(strategy_instance.class0),\
-                      test_size=0.5)
-    
+#    X_train_class0, X_test_class0,y_train_class0, y_test_class0 = \
+#    train_test_split(strategy_instance.class0,\
+#                      [0]*len(strategy_instance.class0),\
+#                      test_size=0)
+    X_train_class0 = strategy_instance.class0
+    y_train_class0 = [0]*len(strategy_instance.class0)
     X = X_train_class0+ strategy_instance.class1
     for i in range(len(X)):
     #    X[i] = np.array(X[i])
         X[i] = " ".join(X[i])
     
-        
+    
     Y= y_train_class0 + [1]*len(strategy_instance.class1)
     
-#    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.00001)
-    X_train = X
-    y_train = Y
+    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0)
     
-    count_vect = CountVectorizer(max_df=0.3, min_df=0.02, binary = True)
-                                    #stop_words='english')
-    #vectorizer = TfidfVectorizer(max_df=0.5,
-    #                                         min_df=2,stop_words="english", max_features=10000)
-    #vectors_train = vectorizer.fit_transform(X_train)
-    vectors_train = count_vect.fit_transform(X_train)
-    #test data
-    #vectors_test = count_vect.transform(X_test)
-    #vectors_test = vectorizer.transform(X_test)
-    #from sklearn.preprocessing import StandardScaler
-    #scaler = StandardScaler(with_mean = False)
-    #vectors_train = scaler.fit_transform(vectors_train)
-    #vectors_test = scaler.fit_transform(vectors_test)
+    
+    vectorizer = CountVectorizer(max_df=1.0, min_df=1, binary = True, ngram_range=(1,1), max_features=5720, lowercase=False)
+    
+    
+    vectors_train = vectorizer.fit_transform(X_train)
     
     
     clf = strategy_instance.train_svm(parameters, vectors_train,y_train)
-    #print(clf.score(vectors_train,y_train))
-    #print(clf.score(vectors_test,y_test))
+    #clf = LinearSVC(random_state=0, C = 100).fit(vectors_train,y_train)
+#    print("train accuracy")
+#    print(clf.score(vectors_train,y_train))
     
-    #y_test_p = clf.predict(vectors_test)
-    #print(confusion_matrix(y_test, y_test_p))
-    #get test data
-    
+#    test_data='./test_data.txt'
     test_data_splitted = []
     with open(test_data,'r') as file:
         test_data_splitted=[line.strip().split(' ') for line in file]
+#    test_data_splitted_backup = test_data_splitted.copy()
+    
     
     test_data_text=[]
     for i in range(len(test_data_splitted)):
     #    X[i] = np.array(X[i])
         test_data_text.append(" ".join(test_data_splitted[i]))
     
-    #y_test2 = [1]*len(test_data_text)
-    #vectors_test2 = count_vect.transform(test_data_text)
+#    y_test2 = [1]*len(test_data_text)
     #vectors_test2 = vectorizer.transform(test_data_text)
-    #print(clf.score(vectors_test2,y_test2))
+#    vectors_test2 = vectorizer.transform(test_data_text)
+#    print("test_data_accuracy")
+#    print(clf.score(vectors_test2,y_test2))
     
     
     ##start to prepare modification
-    features = count_vect.get_feature_names()
+    features = vectorizer.get_feature_names()
+    #features = vectorizer.get_feature_names()
+    
     coef = clf.coef_.toarray()
     pairs = list(zip(features,coef.tolist()[0]))
     pairs.sort(key = lambda x:x[1])
@@ -111,91 +91,142 @@ def fool_classifier(test_data): ## Please do not change the function defination.
             pos_features.append(pair)
         else:
             neg_features.append(pair)
-            
+    
     pos_features.sort(key = lambda x:x[1], reverse=True)
     neg_features.sort(key = lambda x:x[1])
     pairs_dict = dict(pairs)
     
-    for doc in test_data_splitted:
-        for i in range(len(doc)):
-            word = doc[i]
-            if word in pairs_dict:
-                
-                doc[i] = (word,pairs_dict[word])
-            else:
-                doc[i] = (word,0)
-       
-    # Generate modified data
-    test_data_modified_splitted = []
-    for doc in test_data_splitted:
-    #    order = sorted(range(len(doc)), key=lambda k: doc[k][1],
-    #                   reverse=True)
-    #    idx=0
-    #    for i in order[:10]:
-    #        doc[i] = neg_features[idx]
-    #        idx+=1
-        doc.sort(key = lambda x:x[1], reverse=True)
-        doc_text = [pair[0] for pair in doc]
+    
         
-        #word_set = set()
-        last_count = 0
-    #    idx_now = 0
-        origin_set = doc_text.copy()
-        replaced_amount = 0
-        for i in range(len(neg_features)):
-    #    i=0
-    #    while i < len(doc_text):
-            word_replace = neg_features[i][0]
-            if doc_text.count(word_replace)>0:
+    train_0 = strategy_instance.class0.copy()
+    
+    
+    train_1 = strategy_instance.class1.copy()
+    
+    
+    
+    train_0_list = []
+    for doc in train_0:
+        train_0_list+=list(set(doc))
+    train_0_set = set(train_0_list)
+    
+    train_1_list = []
+    for doc in train_1:
+        train_1_list+=list(set(doc))
+    train_1_set = set(train_1_list)
+    
+    
+    ratios_train_0 = []
+    ratios_dict_0 = {}
+    for word in train_0_set:
+        word_count_0 = train_0_list.count(word)
+        word_count_1 = train_1_list.count(word)
+        ratio_word_0 = word_count_0/len(train_0_list)
+        ratio_word_1 = (word_count_1/len(train_1_list))
+        if ratio_word_1==0 and word_count_0>=8:
+            ratio=1000000000
+    #        continue
+        elif ratio_word_1==0 and word_count_0<8:
+            continue
+        else:
+            ratio = ratio_word_0/ratio_word_1
+    #    ratio = word_count_0/(word_count_0 + word_count_1)
+        if word in pairs_dict:
+            coef = pairs_dict[word]
+        else:
+            coef = 0
+    #    ratios_train_0.append((word,word_count_0,word_count_1,ratio,coef))
+        ratios_train_0.append((word,ratio))
+        ratios_dict_0[word] = (word_count_0,word_count_1,ratio,coef)
+    ratios_train_0.sort(key = lambda x:x[1], reverse = True)
+    
+    ratios_train_1 = []
+    ratios_dict_1 = {}
+    for word in train_1_set:
+        word_count_0 = train_0_list.count(word)
+        word_count_1 = train_1_list.count(word)
+        ratio_word_0 = word_count_0/len(train_0_list)
+        ratio_word_1 = (word_count_1/len(train_1_list))
+        if ratio_word_0==0 and word_count_1>=8:
+            ratio=1000000000
+    #        continue
+        elif ratio_word_0==0 and word_count_1<8:
+            continue
+        else:
+            ratio = ratio_word_1/ratio_word_0
+    #    ratio = word_count_0/(word_count_0 + word_count_1)
+        if word in pairs_dict:
+            coef = pairs_dict[word]
+        else:
+            coef = 0
+    #    ratios_train_1.append((word,word_count_0,word_count_1,ratio,coef))
+        ratios_train_1.append((word,ratio))
+        ratios_dict_1[word] = (word_count_0,word_count_1,ratio,coef)
+    ratios_train_1.sort(key = lambda x:x[1], reverse = True)
+    
+    test_data_splitted_modified = []
+    for i in range(len(test_data_splitted)):
+        doc = test_data_splitted[i]
+#        new_doc = doc.copy()
+        add_candidates = []
+        delete_candidates=[]
+        for pos in ratios_train_1:
+            if doc.count(pos[0])>0:
+                delete_candidates.append(pos)
+        for neg in ratios_train_0:
+            if doc.count(neg[0])>0:
                 continue
+            add_candidates.append(neg)
             
-            word= doc_text[last_count]
-            #The next line referred to https://stackoverflow.com/questions/1157106/remove-all-occurrences-of-a-value-from-a-list 
-            doc_text = list(filter(lambda x: x != word, doc_text))
-            doc_text.append(neg_features[i][0])
-            last_count+=1
-            #word_set.add(word)
-            replaced_amount = len((set(origin_set)-set(doc_text)) | (set(doc_text)-set(origin_set)))
-    #        #print(replaced_amount)
-            if replaced_amount==20:
-    #            #print(i)
-                break
-    #        if replaced_amount> last_count:
+        idx_pos = 0
+        idx_neg = 0
+        origin_set = set(doc)
+        doc_modified = list(set(doc))
+        diff =0
+#        print("begin modifying: ")
+        added_num = 0
+        deleted_num = 0
+        if len(delete_candidates)>1:    
+            delete_flag = 1
+        while(diff!=20):
+            
+            neg = add_candidates[idx_neg]
+            pos = delete_candidates[idx_pos]
+            #this part can control the amount of added words
+            if abs(neg[1])> abs(pos[1]) and (added_num<3 or delete_flag==0):
+                doc_modified.append(neg[0])
+#                print("add: {}".format(neg[0]))
+                idx_neg+=1
+                added_num+=1
+            else:
+                doc_modified.remove(pos[0])
+#                print("delete: {}".format(pos[0]))
+                idx_pos+=1
+                deleted_num+=1
+            diff =len((set(origin_set)-set(doc_modified)) | (set(doc_modified)-set(origin_set))) 
+        
+        doc_modified_separated = []
+        for word in doc_modified:
+            doc_modified_separated.append(word)
+        doc_modified_separated.append(".")
+        
+        test_data_splitted_modified.append(doc_modified_separated)
+            
                 
-    
-    #        word_set.add(neg_features[len(word_set)][0])
-    #        idx_now+=1
-            #i+=1
-       
-        ##print("aaa: "+str(replaced_amount))
-        test_data_modified_splitted.append(doc_text)
-        
-    #    doc_text = [pair[0] for pair in doc]
-    #    test_data.append(doc_text)
-        
-    
     modified_test_data=[]
-    for i in range(len(test_data_modified_splitted)):
+    for i in range(len(test_data_splitted_modified)):
     #    X[i] = np.array(X[i])
-        modified_test_data.append(" ".join(test_data_modified_splitted[i]))
-        
-#    vectors_test_modified = count_vect.transform(modified_test_data)
+        modified_test_data.append(" ".join(test_data_splitted_modified[i]))
+    
+#    vectors_test_modified = vectorizer.transform(modified_test_data)
     
     file = open(modified_data,"w")
     for doc in modified_test_data:
-        file.write(doc+" \n")
+        file.write(doc+" \n")   
     file.close()
+    #with open(modified_data,'r') as file:
+    #    modified_test_data2=[line.strip() for line in file]
     
-    
-#    with open(modified_data,'r') as file:
-#        modified_test_data2=[line.strip() for line in file]
-#    
-    #order = sorted(range(len(doc)), key=lambda k: doc[k][1])
-    #for i in order:
-    #    #print(doc[i])
-    
-    #print(clf.score(vectors_test_modified,y_test2))
-    #print(strategy_instance.check_data("./test_data.txt","./modified_data.txt"))
+#    print(strategy_instance.check_data("./test_data.txt","./modified_data.txt"))
     assert strategy_instance.check_data(test_data, modified_data)
     return strategy_instance ## NOTE: You are required to return the instance of this class.
-fool_classifier(test_data)
