@@ -59,16 +59,14 @@ def fool_classifier(test_data): ## Please do not change the function defination.
 #    print(clf.score(vectors_train,y_train))
     
 #    test_data='./test_data.txt'
-    test_data_splitted = []
-    with open(test_data,'r') as file:
-        test_data_splitted=[line.strip().split(' ') for line in file]
+
 #    test_data_splitted_backup = test_data_splitted.copy()
     
     
-    test_data_text=[]
-    for i in range(len(test_data_splitted)):
-    #    X[i] = np.array(X[i])
-        test_data_text.append(" ".join(test_data_splitted[i]))
+#    test_data_text=[]
+#    for i in range(len(test_data_splitted)):
+#    #    X[i] = np.array(X[i])
+#        test_data_text.append(" ".join(test_data_splitted[i]))
     
 #    y_test2 = [1]*len(test_data_text)
     #vectors_test2 = vectorizer.transform(test_data_text)
@@ -96,15 +94,9 @@ def fool_classifier(test_data): ## Please do not change the function defination.
     pos_features.sort(key = lambda x:x[1], reverse=True)
     neg_features.sort(key = lambda x:x[1])
     pairs_dict = dict(pairs)
-    
-    
-        
+      
     train_0 = strategy_instance.class0.copy()
-    
-    
     train_1 = strategy_instance.class1.copy()
-    
-    
     
     train_0_list = []
     for doc in train_0:
@@ -124,10 +116,10 @@ def fool_classifier(test_data): ## Please do not change the function defination.
         word_count_1 = train_1_list.count(word)
         ratio_word_0 = word_count_0/len(train_0_list)
         ratio_word_1 = (word_count_1/len(train_1_list))
-        if ratio_word_1==0 and word_count_0>=8:
+        if ratio_word_1==0 and ratio_word_0 >= 0.0003:
             ratio=1000000000
     #        continue
-        elif ratio_word_1==0 and word_count_0<8:
+        elif ratio_word_1==0 and ratio_word_0 < 0.0003:
             continue
         else:
             ratio = ratio_word_0/ratio_word_1
@@ -148,10 +140,10 @@ def fool_classifier(test_data): ## Please do not change the function defination.
         word_count_1 = train_1_list.count(word)
         ratio_word_0 = word_count_0/len(train_0_list)
         ratio_word_1 = (word_count_1/len(train_1_list))
-        if ratio_word_0==0 and word_count_1>=8:
+        if ratio_word_0==0 and ratio_word_1 >= 0.0003:
             ratio=1000000000
     #        continue
-        elif ratio_word_0==0 and word_count_1<8:
+        elif ratio_word_0==0 and ratio_word_1 < 0.0003:
             continue
         else:
             ratio = ratio_word_1/ratio_word_0
@@ -164,6 +156,12 @@ def fool_classifier(test_data): ## Please do not change the function defination.
         ratios_train_1.append((word,ratio))
         ratios_dict_1[word] = (word_count_0,word_count_1,ratio,coef)
     ratios_train_1.sort(key = lambda x:x[1], reverse = True)
+    
+    
+    
+    test_data_splitted = []
+    with open(test_data,'r') as file:
+        test_data_splitted=[line.strip().split(' ') for line in file]   
     
     test_data_splitted_modified = []
     for i in range(len(test_data_splitted)):
