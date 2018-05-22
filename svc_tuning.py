@@ -78,9 +78,10 @@ cv_decorator = optunity.cross_validated(x=data, y=labels, num_folds=5)
 
 # 4. Tune SVC without deciding the kernel in advance
 # Define parameter search space
-space = {'kernel': {'linear': {'C': [0, 2]},
-                    'rbf': {'logGamma': [-5, 0], 'C': [0, 10]},
-                    'poly': {'degree': [2, 5], 'C': [0, 5], 'coef0': [0, 2]}
+space = {'kernel': {'linear': {'C': [0, 32768]},
+                    'rbf': {'logGamma': [-15, 3], 'C': [0, 32768]},
+                    'poly': {'logGamma': [-15, 3], 'degree': [2, 10], 'C': [0, 32768], 'coef0': [0, 10]},
+                    'sigmoid': {'logGamma': [-15, 3], 'C': [0, 32768], 'coef0': [0, 10]}
                     }
          }
 
@@ -91,9 +92,11 @@ def train_model(x_train, y_train, kernel, C, logGamma, degree, coef0):
     if kernel == 'linear':
         parameters = {'gamma': 'auto', 'C': C, 'degree': 3, 'kernel': kernel, 'coef0': 0.0}
     elif kernel == 'poly':
-        parameters = {'gamma': 'auto', 'C': C, 'degree': degree, 'kernel': kernel, 'coef0': coef0}
+        parameters = {'gamma': 10 ** logGamma, 'C': C, 'degree': degree, 'kernel': kernel, 'coef0': coef0}
     elif kernel == 'rbf':
         parameters = {'gamma': 10 ** logGamma, 'C': C, 'degree': 3, 'kernel': kernel, 'coef0': 0.0}
+    elif kernel == 'sigmoid':
+        parameters = {'gamma': 10 ** logGamma, 'C': C, 'degree': 3, 'kernel': kernel, 'coef0': coef0}
     else:
         raise AttributeError("Unknown kernel function: %s" % kernel)
     for i in range(len(x_train)):
@@ -119,5 +122,10 @@ print("Optimal parameters" + str(optimal_svm_pars))
 print("AUROC of tuned SVM: %1.3f" % info.optimum)
 
 df = optunity.call_log2dataframe(info.call_log)
+sorted_df = df.sort_values('value', ascending=False)
 print("Top 10 parameters for SVC:")
-print(df.sort_values('value', ascending=False))
+print(sorted_df)
+
+filename = "tuning_results.csv"
+print("Export result:", filename)
+sorted_df.to_csv(filename, sep=',', encoding='utf-8', index=False)
