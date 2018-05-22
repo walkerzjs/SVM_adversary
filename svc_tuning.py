@@ -78,11 +78,7 @@ cv_decorator = optunity.cross_validated(x=data, y=labels, num_folds=5)
 
 # 4. Tune SVC without deciding the kernel in advance
 # Define parameter search space
-space = {'kernel': {'linear': {'C': [0, 32768]},
-                    'rbf': {'logGamma': [-15, 3], 'C': [0, 32768]},
-                    'poly': {'logGamma': [-15, 3], 'degree': [2, 10], 'C': [0, 32768], 'coef0': [0, 10]},
-                    'sigmoid': {'logGamma': [-15, 3], 'C': [0, 32768], 'coef0': [0, 10]}
-                    }
+space = {'kernel': {'linear': {'C': [0, 32768]}}
          }
 
 # modify the objective function to cope with conditional hyperparameters
